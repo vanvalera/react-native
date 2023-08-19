@@ -9,8 +9,10 @@ import {
   Platform,
 } from "react-native";
 import React, { useState } from "react";
+import { StatusBar } from "expo-status-bar";
+const backImage = require("../../Source/Photo_BG.png");
 
-const LoginScreen = ({ changeScrenn }) => {
+const LoginScreen = ({ navigation }) => {
   const [mail, setMail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -26,66 +28,80 @@ const LoginScreen = ({ changeScrenn }) => {
       alert("Заповніть будь ласка всі поля!!!");
       return;
     }
-    console.log(`Email: ${mail}, Password: ${password}`);
+    navigation.navigate("Home", { screen: "PostsScreen" });
   };
 
   const passwShow = () => alert(`Ваш пароль: ${password}`);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS == "ios" ? "padding" : "height"}
-      style={styles.containerKeyB}
-    >
-      <View style={styles.container}>
-        <Text style={styles.title}>Увійти</Text>
-
-        <TextInput
-          style={styles.inputMailPassw}
-          placeholder="Адреса електронної пошти"
-          inputMode="email"
-          value={mail}
-          onChangeText={handleMail}
-        />
-        <TextInput
-          style={styles.inputMailPassw}
-          placeholder="Пароль"
-          secureTextEntry={true}
-          value={password}
-          onChangeText={handlePassword}
-        />
-
-        <TouchableOpacity
-          style={styles.passwShow}
-          activeOpacity={0.5}
-          onPress={passwShow}
+    <View style={styles.maincontainer}>
+      <ImageBackground source={backImage} style={styles.backImg}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS == "ios" ? "padding" : "height"}
+          style={styles.containerKeyB}
         >
-          <Text style={styles.passwShowText}>Показати</Text>
-        </TouchableOpacity>
+          <View style={styles.container}>
+            <Text style={styles.title}>Логін</Text>
 
-        <TouchableOpacity
-          style={styles.registerButton}
-          activeOpacity={0.5}
-          onPress={register}
-        >
-          <Text style={styles.registerButtonText}>Увійти</Text>
-        </TouchableOpacity>
+            <TextInput
+              style={styles.inputMailPassw}
+              placeholder="Адреса електронної пошти"
+              inputMode="email"
+              value={mail}
+              onChangeText={handleMail}
+            />
+            <TextInput
+              style={styles.inputMailPassw}
+              placeholder="Пароль"
+              secureTextEntry={true}
+              value={password}
+              onChangeText={handlePassword}
+            />
 
-        <TouchableOpacity
-          style={styles.loginLink}
-          activeOpacity={0.5}
-          onPress={() => changeScrenn(1)}
-        >
-          <Text style={styles.loginLinkText}>
-            Немає акаунту?{" "}
-            <Text style={styles.underlineText}>Зареєструватися</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+            <TouchableOpacity
+              style={styles.passwShow}
+              activeOpacity={0.5}
+              onPress={passwShow}
+            >
+              <Text style={styles.passwShowText}>Показати</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.registerButton}
+              activeOpacity={0.5}
+              onPress={register}
+            >
+              <Text style={styles.registerButtonText}>Логін</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.loginLink}
+              activeOpacity={0.5}
+              onPress={() => navigation.navigate("Registratione")}
+            >
+              <Text style={styles.loginLinkText}>
+                Немає акаунту?{" "}
+                <Text style={styles.underlineText}>Зареєструватися</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </ImageBackground>
+      <StatusBar style="auto" />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  maincontainer: {
+    flex: 1,
+    alignItems: "center",
+  },
+  backImg: {
+    flex: 1,
+    justifyContent: "flex-end",
+    width: "100%",
+  },
   container: {
     backgroundColor: "#FFFFFF",
     alignItems: "center",
@@ -173,9 +189,6 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     fontSize: 16,
     lineHeight: 19,
-  },
-  underlineText: {
-    textDecorationLine: "underline",
   },
 });
 
