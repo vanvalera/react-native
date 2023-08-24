@@ -1,128 +1,118 @@
-import { View, Text, StyleSheet, TouchableOpacity, Button } from "react-native";
-import React from "react";
-import { AntDesign, SimpleLineIcons, Feather } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import CreatePostsScreen from "../CreatePostsScreen/CreatePostsScreen";
-import PostsScreen from "../PostsScreen/PostsScreen";
-import ProfileScreen from "../ProfileScreen/ProfileScreen";
+import { View } from "react-native";
+import { GridIcon, UnionIcon, UserIcon } from "../../../assets/svgIcons/icons";
+import { PostsScreen } from "../PostsScreen/PostsScreen";
+import { CreatePostsScreen } from "../CreatePostsScreen/CreatePostsScreen";
+import { ProfileScreen } from "../ProfileScreen/ProfileScreen";
+import { StyleSheet } from "react-native";
+import { ButtonToBack } from "../../component/ButtonToBack";
+import { ButtonToLogOut } from "../../component/ButtonToLogOut";
 
-const BottomTabs = createBottomTabNavigator();
-
-const Home = ({ navigation }) => {
+const Tabs = createBottomTabNavigator();
+export const Home = () => {
   return (
-    <BottomTabs.Navigator
+    <Tabs.Navigator
       initialRouteName="Posts"
-      screenOptions={{
-        tabBarShowLabel: false,
-        tabBarStyle: { height: 80 },
-      }}
-    >
-      <BottomTabs.Screen
-        options={{
-          tabBarIcon: ({ focused, size, color }) => {
-            return <SimpleLineIcons name="grid" size={20} color={color} />;
-          },
-          headerTitleAlign: "center",
-          headerRightContainerStyle: { paddingRight: 20 },
-          headerRight: () => (
-            <TouchableOpacity
-              style={styles.logoutButton}
-              activeOpacity={0.5}
-              onPress={() => navigation.navigate("Login")}
-            >
-              <Feather name="log-out" size={24} color="gray" />
-            </TouchableOpacity>
-          ),
-        }}
-        name="Публікації"
-        component={PostsScreen}
-      />
-
-      <BottomTabs.Screen
-        options={{
-          tabBarIcon: () => {
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          if (route.name === "Posts") {
             return (
-              <TouchableOpacity
-                style={styles.addButton}
-                activeOpacity={0.5}
-                onPress={() => navigation.navigate("CreatePostsScreen")}
+              <View
+                style={
+                  focused ? styles.focusedIconContainer : styles.iconContainer
+                }
               >
-                <Text style={styles.addButtonText}>+</Text>
-              </TouchableOpacity>
+                <GridIcon stroke={focused ? "#ffffff" : "#212121"} />
+              </View>
             );
-          },
-          headerShown: false,
-          tabBarStyle: { display: "none" },
-          headerTitleAlign: "center",
-        }}
-        name="CreatePostsScreen"
-        component={CreatePostsScreen}
-      />
-
-      <BottomTabs.Screen
+          } else if (route.name === "CreatePosts") {
+            return (
+              <View
+                style={
+                  focused ? styles.focusedIconContainer : styles.iconContainer
+                }
+              >
+                <UnionIcon fill={focused ? "#ffffff" : "#212121"} />
+              </View>
+            );
+          } else if (route.name === "Profile") {
+            return (
+              <View
+                style={
+                  focused ? styles.focusedIconContainer : styles.iconContainer
+                }
+              >
+                <UserIcon stroke={focused ? "#ffffff" : "#212121"} />
+              </View>
+            );
+          }
+        },
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          height: 83,
+          paddingTop: 9,
+          paddingLeft: 82,
+          paddingRight: 82,
+          paddingBottom: 22,
+          justifyContent: "center",
+          alignItems: "center",
+        },
+        headerStyle: {
+          borderBottomWidth: 1,
+        },
+        headerTitleStyle: {
+          fontFamily: "Roboto-Medium",
+          fontWeight: 500,
+          color: "#212121",
+          fontSize: 17,
+          lineHeight: 22,
+          letterSpacing: -0.408,
+        },
+      })}
+    >
+      <Tabs.Screen
+        name="Posts"
+        component={PostsScreen}
         options={{
-          tabBarIcon: ({ focused, size, color }) => {
-            return <AntDesign name="user" size={20} color={color} />;
-          },
+          title: "Публікації",
+          headerTitleAlign: "center",
+          headerRight: () => <ButtonToLogOut />,
+        }}
+      />
+      <Tabs.Screen
+        name="CreatePosts"
+        component={CreatePostsScreen}
+        options={{
+          title: "Створити публікацію",
+          headerTitleAlign: "center",
+          headerLeft: () => <ButtonToBack />,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tabs.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
           headerShown: false,
         }}
-        name="ProfileScreen"
-        component={ProfileScreen}
       />
-    </BottomTabs.Navigator>
+    </Tabs.Navigator>
   );
 };
 
 const styles = StyleSheet.create({
-  registerButton: {
-    backgroundColor: "#FF6C00",
-    height: 50,
-    width: 343,
+  iconContainer: {
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 100,
-    marginTop: 44,
-  },
-  registerButtonText: {
-    color: "#fff",
-    fontWeight: "400",
-  },
-  loginLink: {
-    marginTop: 16,
-    marginBottom: 66,
-  },
-  loginLinkText: {
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    lineHeight: 19,
-  },
-  footer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    borderTopColor: "#999999",
-    borderTopWidth: 1,
-  },
-  addButton: {
-    backgroundColor: "#FF6C00",
-    height: 40,
     width: 70,
+    height: 40,
+  },
+  focusedIconContainer: {
     justifyContent: "center",
     alignItems: "center",
+    width: 70,
+    height: 40,
+    backgroundColor: "#ff6c00",
     borderRadius: 20,
   },
-  addButtonText: {
-    color: "#ffffff",
-    fontSize: 18,
-  },
-  gridButton: {
-    marginRight: 40,
-  },
-  userButton: {
-    marginLeft: 40,
-  },
 });
-
-export default Home;

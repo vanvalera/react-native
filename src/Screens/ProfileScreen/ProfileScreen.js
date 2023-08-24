@@ -1,181 +1,123 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ImageBackground,
-  SafeAreaView,
-  ScrollView,
-} from "react-native";
-import React from "react";
-import { Feather } from "@expo/vector-icons";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-const backImage = require("../../Source/Photo_BG.png");
-const buttonImg = require("../RegistrationScreen/add.png");
-const profilePhoto = require("../../Source/Rectangle22.png");
+import { ScrollView, Text } from "react-native";
+import { BackgroundImage } from "../../component/BackgroundImage";
+import { View } from "react-native";
+import { StyleSheet } from "react-native";
+import { CrossIcon } from "../../../assets/svgIcons/icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { globalStyles } from "../../styles/globalStyles";
+import { Image } from "react-native";
+import { TouchableOpacity } from "react-native";
+import { ButtonToLogOut } from "../../component/ButtonToLogOut";
+import { UserPost } from "../../component/UserPosts";
 
-import data from "../../Source/posts";
-import Post from "../../Elements/Post";
-
-function ProfileScreen({ navigation }) {
+export const ProfileScreen = () => {
   return (
-    <SafeAreaView>
-      <ScrollView>
-        <ImageBackground source={backImage} style={styles.backImg}>
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
-            <View style={styles.container}>
-              <View style={styles.pfotoContainer}>
-                <ImageBackground
-                  source={profilePhoto}
-                  style={{ width: "100%", height: "100%" }}
-                ></ImageBackground>
-                <TouchableOpacity style={styles.addbutton} activeOpacity={0.5}>
-                  <ImageBackground
-                    source={buttonImg}
-                    style={{ width: "100%", height: "100%" }}
-                  ></ImageBackground>
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity
-                style={styles.logoutButton}
-                activeOpacity={0.5}
-                onPress={() =>
-                  navigation.navigate("Home", { screen: "PostsScreen" })
-                }
-              >
-                <Feather name="log-out" size={24} color="gray" />
-              </TouchableOpacity>
-              <Text style={styles.title}>Natali Romanova</Text>
-              {data.map((el) => (
-                <Post
-                  key={el.id}
-                  img={el.img}
-                  text={el.name}
-                  msgs={0}
-                  location={el.location}
-                />
-              ))}
-            </View>
+    <SafeAreaView style={globalStyles.container}>
+      <BackgroundImage>
+        <View style={styles.container}>
+          <TouchableOpacity style={{ position: "absolute", top: 22, right: 0 }}>
+            <ButtonToLogOut />
+          </TouchableOpacity>
+          <View style={styles.userPhotoContainer}>
+            <Image
+              style={{ borderRadius: 16 }}
+              source={require("../../../assets/img/bigUserImg.png")}
+            />
+            <TouchableOpacity style={styles.deletePhotoBtn}>
+              <CrossIcon />
+            </TouchableOpacity>
           </View>
-        </ImageBackground>
-      </ScrollView>
+          <Text style={styles.nameHeader}>Natali Romanova</Text>
+          <ScrollView>
+            <View style={{ display: "flex", gap: 32 }}>
+              <UserPost
+                imgSrc={require("../../../assets/img/post_1.jpg")}
+                postName="Ліс"
+                numbOfComments={8}
+                numbOfLikes={153}
+                location="Ukraine"
+                coords={{
+                  latitude: 48.84734,
+                  longitude: 23.44587,
+                }}
+              />
+              <UserPost
+                imgSrc={require("../../../assets/img/post_2.jpg")}
+                postName="Захід на Чорному морі"
+                numbOfComments={3}
+                numbOfLikes={200}
+                location="Ukraine"
+                coords={{
+                  latitude: 46.47747,
+                  longitude: 30.73262,
+                }}
+              />
+              <UserPost
+                imgSrc={require("../../../assets/img/post_3.jpg")}
+                postName="Старий будиночок у Венеції"
+                numbOfComments={50}
+                numbOfLikes={200}
+                location="Italy"
+                coords={{
+                  latitude: 45.43713,
+                  longitude: 12.33265,
+                }}
+              />
+            </View>
+          </ScrollView>
+        </View>
+      </BackgroundImage>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    justifyContent: "flex-start",
-    alignItems: "center",
-    width: "100%",
-    backgroundColor: "#FFFFFF",
-    borderTopRightRadius: 25,
-    borderTopLeftRadius: 25,
-  },
-  logoutButton: {
-    marginLeft: 350,
-    marginTop: -40,
-  },
   container: {
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
+    alignContent: "flex-end",
     width: "100%",
-    borderTopRightRadius: 25,
+    height: "80%",
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingTop: 92,
+    paddingBottom: 43,
     borderTopLeftRadius: 25,
-    marginTop: 200,
+    borderTopRightRadius: 25,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    backgroundColor: "#fff",
   },
-  containerKeyB: {
-    justifyContent: "flex-end",
-  },
-  pfotoContainer: {
-    marginTop: -60,
-    height: 120,
+  userPhotoContainer: {
+    position: "absolute",
+    top: -60,
+    left: "50%",
+    transform: [{ translateX: -50 }],
     width: 120,
-    backgroundColor: "#F6F6F6",
+    height: 120,
+    backgroundColor: "#f6f6f6",
     borderRadius: 16,
-    overflow: "visible",
   },
-
-  addbutton: {
-    marginTop: -40,
-    left: "90%",
-    height: 25,
+  deletePhotoBtn: {
+    position: "absolute",
+    top: 81,
+    right: -12.5,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
     width: 25,
-    pointerEvents: "auto",
+    height: 25,
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderRadius: 12.5,
+    backgroundColor: "#fff",
+    borderColor: "#e8e8e8",
   },
-  addButton: {
-    backgroundColor: "#FF6C00",
-    height: 40,
-    width: 70,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-  },
-  title: {
-    fontWeight: "500",
+  nameHeader: {
+    marginBottom: 32,
+    fontFamily: "Roboto-Medium",
+    fontWeight: 500,
     fontSize: 30,
-    marginTop: 32,
-    lineHeight: 35,
-  },
-  inputLogin: {
-    backgroundColor: "#F6F6F6",
-    width: 343,
-    height: 50,
-    borderRadius: 8,
-    marginTop: 33,
-    padding: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    lineHeight: 19,
-  },
-  inputMailPassw: {
-    backgroundColor: "#F6F6F6",
-    width: 343,
-    height: 50,
-    borderRadius: 8,
-    padding: 16,
-    marginTop: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    position: "relative",
-  },
-  passwShowText: {
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    lineHeight: 19,
-  },
-  passwShow: {
-    top: -34,
-    left: 130,
-  },
-  registerButton: {
-    backgroundColor: "#FF6C00",
-    height: 50,
-    width: 343,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 100,
-    marginTop: 44,
-  },
-  registerButtonText: {
-    color: "#fff",
-    fontWeight: "400",
-  },
-  loginLink: {
-    marginTop: 16,
-    marginBottom: 66,
-  },
-  loginLinkText: {
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    lineHeight: 19,
+    lineHeight: 35.16,
+    color: "#212",
+    textAlign: "center",
   },
 });
-
-export default ProfileScreen;
