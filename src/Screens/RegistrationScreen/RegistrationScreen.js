@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   StyleSheet,
@@ -8,19 +9,27 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { Text, View } from "react-native";
-import { UnionIcon } from "../../../assets/svgIcons/icons";
+import { CrossIcon, UnionIcon } from "../../../assets/svgIcons/icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { globalStyles } from "../../styles/globalStyles";
 import { BackgroundImage } from "../../component/BackgroundImage";
 import { useNavigation } from "@react-navigation/native";
 import { Platform } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { uploadPhotoOnServer } from "../../services/uploadPhotoOnServer";
+import { delPhotoFromServer } from "../../services/delPhotoFromServer";
+import { useDispatch } from "react-redux";
+import { register } from "../../redux/auth/operations";
 
 export const RegistartionScreen = () => {
   const navigation = useNavigation();
 
+  const dispatch = useDispatch();
+
   const [login, setLogin] = useState("");
-  const [email, setEmail] = useState("");
+  const [mail, setMail] = useState("");
   const [password, setPassword] = useState("");
+  const [image, setImage] = useState(null);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [isSecureEnter, setIsSecureEnter] = useState(true);
 
@@ -28,15 +37,52 @@ export const RegistartionScreen = () => {
     setIsSecureEnter(!isSecureEnter);
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      quality: 1,
+    });
+    if (!result.canceled) {
+      const uploadedPhoto = await uploadPhotoOnServer(
+        result.assets[0].uri,
+        "avatars"
+      );
+      setImage(uploadedPhoto);
+    } else alert("You didn`t choose your avatar...");
+  };
+
+  const deleteAvatar = async () => {
+    try {
+      await delPhotoFromServer(image.finalPath);
+      setImage(null);
+    } catch (error) {
+      alert("Something went wrong.");
+    }
+  };
+
   const handleFormSubmit = () => {
-    if (!login.trim() || !email.trim() || !password.trim()) return;
-    console.log("Login: ", login);
-    console.log("Email: ", email);
-    console.log("Password: ", password);
-    navigation.navigate("Home");
+    if (!login.trim() || !mail.trim() || !password.trim()) {
+      alert("Please, fill in all fields to continue");
+      return;
+    }
+    const photoUrl = image ? `${image.photoLink} ${image.finalPath}` : null;
+    dispatch(register({ mail, password, login, photoUrl }))
+      .unwrap()
+      .then(() => navigation.navigate("Home"))
+      .catch((e) =>
+        alert("Something went wrong... Check your credentials and try again.")
+      );
+
     setLogin("");
-    setEmail("");
+    setMail("");
     setPassword("");
+    setImage(null);
+  };
+
+  const navigateToLoginScreen = () => {
+    if (image) deleteAvatar();
+    navigation.navigate("Login");
   };
 
   return (
@@ -58,9 +104,27 @@ export const RegistartionScreen = () => {
                 ]}
               >
                 <View style={styles.photoContainer}>
-                  <TouchableOpacity style={styles.addPhotoButton}>
-                    <UnionIcon fill="#ff6c00" />
-                  </TouchableOpacity>
+                  {image?.photoLink && (
+                    <Image
+                      source={{ uri: image.photoLink }}
+                      style={{ width: 120, height: 120, borderRadius: 16 }}
+                    />
+                  )}
+                  {image ? (
+                    <TouchableOpacity
+                      style={globalStyles.deletePhotoBtn}
+                      onPress={deleteAvatar}
+                    >
+                      <CrossIcon />
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={globalStyles.addPhotoButton}
+                      onPress={pickImage}
+                    >
+                      <UnionIcon fill="#ff6c00" />
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <Text style={styles.formTitle}>Реєстрація</Text>
                 <TextInput
@@ -74,8 +138,8 @@ export const RegistartionScreen = () => {
                 />
                 <TextInput
                   style={[globalStyles.commonTextStyles, styles.input]}
-                  value={email}
-                  onChangeText={setEmail}
+                  value={mail}
+                  onChangeText={setMail}
                   onFocus={() => setIsKeyboardOpen(true)}
                   onBlur={() => setIsKeyboardOpen(false)}
                   placeholder="Адреса електронної пошти"
@@ -125,9 +189,7 @@ export const RegistartionScreen = () => {
                   >
                     Вже є акаунт?{" "}
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate("Login")}
-                  >
+                  <TouchableOpacity onPress={navigateToLoginScreen}>
                     <Text
                       style={[
                         globalStyles.commonTextStyles,
@@ -169,19 +231,6 @@ const styles = StyleSheet.create({
     height: 120,
     backgroundColor: "#f6f6f6",
     borderRadius: 16,
-  },
-  addPhotoButton: {
-    position: "absolute",
-    top: 81,
-    right: -12.5,
-    justifyContent: "center",
-    alignItems: "center",
-    width: 25,
-    height: 25,
-    borderWidth: 1,
-    borderStyle: "solid",
-    borderRadius: 12.5,
-    borderColor: "#ff6c00",
   },
   formTitle: {
     marginBottom: 32,

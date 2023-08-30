@@ -3,18 +3,19 @@ import { Text } from "react-native";
 import { Image } from "react-native";
 import { View } from "react-native";
 
-export const Comment = ({ userImgSrc, children, date, isMyComment }) => {
+export const Comment = ({ userImgSrc, children, date, isMyComment, style }) => {
   return (
     <View
       style={[
         styles.container,
         {
           flexDirection: isMyComment ? "row-reverse" : "row",
+          ...style,
         },
       ]}
     >
       <View style={styles.userImgContainer}>
-        <Image source={userImgSrc} />
+        <Image source={userImgSrc} style={styles.userImgContainer} />
       </View>
       <View
         style={[

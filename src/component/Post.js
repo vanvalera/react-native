@@ -11,18 +11,20 @@ export const Post = ({
   numbOfComments,
   location,
   coords,
+  postId,
+  style,
 }) => {
   const navigation = useNavigation();
 
   const onCommentsClick = () => {
-    navigation.navigate("Comments", { imgSrc });
+    navigation.navigate("Comments", { imgSrc, postId });
   };
 
   const onLocationClick = () => {
     navigation.navigate("Maps", { coords });
   };
   return (
-    <View>
+    <View style={style}>
       <View>
         <Image source={imgSrc} resizeMode="cover" style={styles.image} />
       </View>
@@ -48,6 +50,7 @@ export const Post = ({
 };
 
 const styles = StyleSheet.create({
+  container: {},
   commonText: {
     fontSize: 16,
     lineHeight: 18.75,

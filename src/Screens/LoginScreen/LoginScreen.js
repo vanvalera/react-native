@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -13,25 +13,42 @@ import { globalStyles } from "../../styles/globalStyles";
 import { BackgroundImage } from "../../component/BackgroundImage";
 import { useNavigation } from "@react-navigation/native";
 import { Platform } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "../../redux/auth/operations";
+import { selectIsLoggedIn, selectUser } from "../../redux/auth/selectors";
 
 export const LoginScreen = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
 
-  const [email, setEmail] = useState("");
+  const [mail, setMail] = useState("");
   const [password, setPassword] = useState("");
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [isSecureEnter, setIsSecureEnter] = useState(true);
+
+  const isLoggedIn = useSelector(selectIsLoggedIn);
+
+  useEffect(() => {
+    if (isLoggedIn) navigation.navigate("Home");
+  }, [isLoggedIn]);
 
   const togleSecureEnter = () => {
     setIsSecureEnter(!isSecureEnter);
   };
 
-  const handleFormSubmit = () => {
-    if (!email.trim() || !password.trim()) return;
-    console.log("Email: ", email);
-    console.log("Password: ", password);
-    navigation.navigate("Home");
-    setEmail("");
+  const handleFormSubmit = async () => {
+    if (!mail.trim() || !password.trim()) {
+      alert("Please, fill in all fields to continue");
+      return;
+    }
+    dispatch(login({ mail, password }))
+      .unwrap()
+      .then()
+      .catch((e) =>
+        alert("Something went wrong... Check your credentials and try again.")
+      );
+
+    setMail("");
     setPassword("");
   };
 
@@ -56,8 +73,8 @@ export const LoginScreen = () => {
                 <Text style={styles.formTitle}>Увійти</Text>
                 <TextInput
                   style={[globalStyles.commonTextStyles, styles.input]}
-                  value={email}
-                  onChangeText={setEmail}
+                  value={mail}
+                  onChangeText={setMail}
                   onFocus={() => setIsKeyboardOpen(true)}
                   onBlur={() => setIsKeyboardOpen(false)}
                   placeholder="Адреса електронної пошти"

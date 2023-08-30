@@ -1,16 +1,49 @@
-import { ScrollView, Text } from "react-native";
+import { Text } from "react-native";
 import { BackgroundImage } from "../../component/BackgroundImage";
 import { View } from "react-native";
 import { StyleSheet } from "react-native";
-import { CrossIcon } from "../../../assets/svgIcons/icons";
+import { CrossIcon, UnionIcon } from "../../../assets/svgIcons/icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { globalStyles } from "../../styles/globalStyles";
 import { Image } from "react-native";
 import { TouchableOpacity } from "react-native";
 import { ButtonToLogOut } from "../../component/ButtonToLogOut";
 import { UserPost } from "../../component/UserPosts";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser } from "../../redux/auth/selectors";
+import { DEFAULT_AVATAR } from "../../constants/constants";
+import * as ImagePicker from "expo-image-picker";
+import { delUserAvatar, updUserAvatar } from "../../redux/auth/operations";
+import { selectIsLoading, selectPosts } from "../../redux/posts/selectors";
+import { FlatList } from "react-native";
+import { useEffect } from "react";
+import { getUserPosts } from "../../redux/posts/operations";
+import { ActivityIndicator } from "react-native";
 
 export const ProfileScreen = () => {
+  const dispatch = useDispatch();
+  const { photoLink, displayName, id } = useSelector(selectUser);
+  const userPhoto = photoLink ? photoLink : DEFAULT_AVATAR;
+  const posts = useSelector(selectPosts);
+  const isLoading = useSelector(selectIsLoading);
+
+  useEffect(() => {
+    dispatch(getUserPosts(id));
+  }, []);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      quality: 1,
+    });
+    if (!result.canceled) {
+      dispatch(
+        updUserAvatar({ photo: result.assets[0].uri, folder: "avatars" })
+      );
+    } else alert("You didn`t choose your avatar...");
+  };
+
   return (
     <SafeAreaView style={globalStyles.container}>
       <BackgroundImage>
@@ -20,51 +53,43 @@ export const ProfileScreen = () => {
           </TouchableOpacity>
           <View style={styles.userPhotoContainer}>
             <Image
-              style={{ borderRadius: 16 }}
-              source={require("../../../assets/img/bigUserImg.png")}
+              style={{ borderRadius: 16, width: 120, height: 120 }}
+              source={{ uri: userPhoto }}
             />
-            <TouchableOpacity style={styles.deletePhotoBtn}>
-              <CrossIcon />
-            </TouchableOpacity>
+            {photoLink ? (
+              <TouchableOpacity
+                style={globalStyles.deletePhotoBtn}
+                onPress={() => dispatch(delUserAvatar())}
+              >
+                <CrossIcon />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={globalStyles.addPhotoButton}
+                onPress={pickImage}
+              >
+                <UnionIcon fill="#ff6c00" />
+              </TouchableOpacity>
+            )}
           </View>
-          <Text style={styles.nameHeader}>Natali Romanova</Text>
-          <ScrollView>
-            <View style={{ display: "flex", gap: 32 }}>
+          <Text style={styles.nameHeader}>{displayName}</Text>
+          {isLoading && <ActivityIndicator size="large" color="#ff6c00" />}
+          <FlatList
+            data={posts}
+            renderItem={({ item, index }) => (
               <UserPost
-                imgSrc={require("../../../assets/img/post_1.jpg")}
-                postName="Ліс"
-                numbOfComments={8}
-                numbOfLikes={153}
-                location="Ukraine"
-                coords={{
-                  latitude: 48.84734,
-                  longitude: 23.44587,
-                }}
+                imgSrc={{ uri: item.photoLink }}
+                postName={item.postName}
+                numbOfComments={item.comments.length}
+                numbOfLikes={0}
+                location={item.locationName}
+                coords={item.location}
+                postId={item.postId}
+                style={{ marginBottom: index === posts.length - 1 ? 0 : 32 }}
               />
-              <UserPost
-                imgSrc={require("../../../assets/img/post_2.jpg")}
-                postName="Захід на Чорному морі"
-                numbOfComments={3}
-                numbOfLikes={200}
-                location="Ukraine"
-                coords={{
-                  latitude: 46.47747,
-                  longitude: 30.73262,
-                }}
-              />
-              <UserPost
-                imgSrc={require("../../../assets/img/post_3.jpg")}
-                postName="Старий будиночок у Венеції"
-                numbOfComments={50}
-                numbOfLikes={200}
-                location="Italy"
-                coords={{
-                  latitude: 45.43713,
-                  longitude: 12.33265,
-                }}
-              />
-            </View>
-          </ScrollView>
+            )}
+            keyExtractor={(item) => item.postId}
+          />
         </View>
       </BackgroundImage>
     </SafeAreaView>
@@ -95,21 +120,6 @@ const styles = StyleSheet.create({
     height: 120,
     backgroundColor: "#f6f6f6",
     borderRadius: 16,
-  },
-  deletePhotoBtn: {
-    position: "absolute",
-    top: 81,
-    right: -12.5,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    width: 25,
-    height: 25,
-    borderWidth: 1,
-    borderStyle: "solid",
-    borderRadius: 12.5,
-    backgroundColor: "#fff",
-    borderColor: "#e8e8e8",
   },
   nameHeader: {
     marginBottom: 32,

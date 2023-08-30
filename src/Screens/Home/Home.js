@@ -47,6 +47,7 @@ export const Home = () => {
             );
           }
         },
+        unmountOnBlur: true,
         tabBarShowLabel: false,
         tabBarStyle: {
           height: 83,

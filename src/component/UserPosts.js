@@ -17,11 +17,13 @@ export const UserPost = ({
   numbOfLikes,
   location,
   coords,
+  postId,
+  style,
 }) => {
   const navigation = useNavigation();
 
   const onCommentsClick = () => {
-    navigation.navigate("Comments", { imgSrc });
+    navigation.navigate("Comments", { imgSrc, postId });
   };
 
   const onLocationClick = () => {
@@ -29,7 +31,7 @@ export const UserPost = ({
   };
 
   return (
-    <View>
+    <View style={style}>
       <View>
         <Image source={imgSrc} resizeMode="cover" style={styles.image} />
       </View>

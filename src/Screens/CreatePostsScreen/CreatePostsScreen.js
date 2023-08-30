@@ -16,6 +16,11 @@ import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import { Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { addPost } from "../../redux/posts/operations";
+import { uploadPhotoOnServer } from "../../services/uploadPhotoOnServer";
+import { nanoid } from "@reduxjs/toolkit";
+import { selectUser } from "../../redux/auth/selectors";
 
 export const CreatePostsScreen = () => {
   const navigation = useNavigation();
@@ -28,11 +33,34 @@ export const CreatePostsScreen = () => {
   const [postName, setPostName] = useState("");
   const isPostInfoFull = postName && locationName && photoUri;
 
+  const { id: userId } = useSelector(selectUser);
+
+  const dispatch = useDispatch();
+
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       await MediaLibrary.requestPermissionsAsync();
       setHasPermission(status === "granted");
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+      }
+      Location.getCurrentPositionAsync({})
+        .then((loc) => {
+          const coords = {
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+          };
+          setLocation(coords);
+          return coords;
+        })
+        .catch((e) => console.log(e.message));
     })();
   }, []);
 
@@ -57,21 +85,19 @@ export const CreatePostsScreen = () => {
     setLocationName("");
   };
 
-  const handleCreatePost = () => {
-    (async () => {
-      let status = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-      }
-      let location = await Location.getCurrentPositionAsync({});
-      const coords = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-      setLocation(coords);
-      navigation.navigate("Home", { screen: "Posts" });
-      clearData();
-    })();
+  const handleCreatePost = async () => {
+    const { photoLink } = await uploadPhotoOnServer(photoUri, "postsPhoto");
+    await dispatch(
+      addPost({
+        photoLink,
+        locationName,
+        postName,
+        location,
+        userId,
+      })
+    );
+    navigation.navigate("Home", { screen: "Posts" });
+    clearData();
   };
 
   return (

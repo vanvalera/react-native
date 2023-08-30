@@ -1,56 +1,57 @@
 import { Image, StyleSheet } from "react-native";
 import { Text, View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
 import { Post } from "../../component/Post";
 import { globalStyles } from "../../styles/globalStyles";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser } from "../../redux/auth/selectors";
+import { DEFAULT_AVATAR } from "../../constants/constants";
+import { useEffect } from "react";
+import { getAllPosts } from "../../redux/posts/operations";
+import { FlatList } from "react-native";
+import { selectIsLoading, selectPosts } from "../../redux/posts/selectors";
+import { ActivityIndicator } from "react-native";
 
 export const PostsScreen = () => {
+  const { photoLink, displayName, email } = useSelector(selectUser);
+  const posts = useSelector(selectPosts);
+  const isLoading = useSelector(selectIsLoading);
+  const userPhoto = photoLink ? photoLink : DEFAULT_AVATAR;
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getAllPosts());
+  }, []);
+
   return (
-    <ScrollView>
-      <View style={[globalStyles.container, styles.container]}>
-        <View style={styles.profileContainer}>
-          <View style={styles.photoContainer}>
-            <Image source={require("../../../assets/img/userImg.png")} />
-          </View>
-          <View>
-            <Text style={styles.userName}>Natali Romanova</Text>
-            <Text style={styles.email}>email@example.com</Text>
-          </View>
+    <View style={[globalStyles.container, styles.container]}>
+      <View style={styles.profileContainer}>
+        <View style={styles.photoContainer}>
+          <Image source={{ uri: userPhoto }} style={styles.photoContainer} />
         </View>
-        <View style={styles.postsContainer}>
-          <Post
-            imgSrc={require("../../../assets/img/post_1.jpg")}
-            postName="Ліс"
-            numbOfComments={2}
-            location="Ivano-Frankivs'k Region, Ukraine"
-            coords={{
-              latitude: 48.84734,
-              longitude: 23.44587,
-            }}
-          />
-          <Post
-            imgSrc={require("../../../assets/img/post_2.jpg")}
-            postName="Захід на Чорному морі"
-            numbOfComments={2}
-            location="Odesa, Ukraine"
-            coords={{
-              latitude: 46.47747,
-              longitude: 30.73262,
-            }}
-          />
-          <Post
-            imgSrc={require("../../../assets/img/post_3.jpg")}
-            postName="Старий будиночок у Венеції"
-            numbOfComments={2}
-            location="Venezia, Italy"
-            coords={{
-              latitude: 45.43713,
-              longitude: 12.33265,
-            }}
-          />
+        <View>
+          <Text style={styles.userName}>{displayName}</Text>
+          <Text style={styles.email}>{email}</Text>
         </View>
       </View>
-    </ScrollView>
+      {isLoading && <ActivityIndicator size="large" color="#ff6c00" />}
+      <FlatList
+        style={styles.postsContainer}
+        data={posts}
+        renderItem={({ item, index }) => (
+          <Post
+            imgSrc={{ uri: item.photoLink }}
+            postName={item.postName}
+            numbOfComments={item.comments.length}
+            location={item.locationName}
+            coords={item.location}
+            postId={item.postId}
+            style={{ marginBottom: index === posts.length - 1 ? 0 : 32 }}
+          />
+        )}
+        keyExtractor={(item) => item.postId}
+      />
+    </View>
   );
 };
 
@@ -85,8 +86,6 @@ const styles = StyleSheet.create({
     lineHeight: 12.89,
   },
   postsContainer: {
-    display: "flex",
-    gap: 32,
     marginTop: 32,
   },
 });

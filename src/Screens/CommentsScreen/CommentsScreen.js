@@ -11,16 +11,53 @@ import { useEffect, useState } from "react";
 import { TextInput } from "react-native";
 import { TouchableOpacity } from "react-native";
 import { ArrowUpIcon } from "../../../assets/svgIcons/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { postComment } from "../../redux/posts/operations";
+import { getCommentDate } from "../../services/getCommentDate";
+import { selectUser } from "../../redux/auth/selectors";
+import { selectPosts } from "../../redux/posts/selectors";
+import { FlatList } from "react-native";
+import { DEFAULT_AVATAR } from "../../constants/constants";
 
 export const CommentsScreen = () => {
   const {
-    params: { imgSrc },
+    params: { imgSrc, postId },
   } = useRoute();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [commentValue, setCommentValue] = useState("");
+  const [comments, setComments] = useState([]);
+
+  const dispatch = useDispatch();
+
+  const { photoLink, id } = useSelector(selectUser);
+  const posts = useSelector(selectPosts);
+
+  const userPhoto = photoLink ? photoLink : DEFAULT_AVATAR;
 
   useEffect(() => {
-    console.log("Mount comments");
-  }, []);
+    const idx = posts.findIndex((post) => post.postId === postId);
+    const comments = posts[idx].comments;
+    setComments(comments);
+  }, [posts]);
+
+  const handlePostComment = () => {
+    if (!commentValue) {
+      alert("Type in your comment.");
+      return;
+    }
+
+    dispatch(
+      postComment({
+        commentValue,
+        date: getCommentDate(Date.now()),
+        userImgSrc: userPhoto,
+        postId,
+        userId: id,
+      })
+    );
+
+    setCommentValue("");
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -37,44 +74,36 @@ export const CommentsScreen = () => {
             },
           ]}
         >
-          <ScrollView>
-            <Image source={imgSrc} style={styles.image} />
-
-            <View style={{ display: "flex", gap: 24, marginBottom: 32 }}>
+          <Image source={imgSrc} style={styles.image} />
+          <FlatList
+            style={{ marginBottom: 32 }}
+            data={comments}
+            renderItem={({ item, index }) => (
               <Comment
-                userImgSrc={require("../../../assets/img/user1CommentImg.png")}
-                date="09 червня, 2020 | 08:40"
-                isMyComment={false}
+                userImgSrc={{ uri: item.userImgSrc }}
+                date={item.date}
+                isMyComment={item.userId === id}
+                style={{ marginBottom: index === posts.length - 1 ? 0 : 24 }}
               >
-                Really love your most recent photo. I’ve been trying to capture
-                the same thing for a few months and would love some tips!
+                {item.commentValue}
               </Comment>
-              <Comment
-                userImgSrc={require("../../../assets/img/user2CommentImg.png")}
-                date="09 червня, 2020 | 09:14"
-                isMyComment={true}
-              >
-                A fast 50mm like f1.8 would help with the bokeh. I’ve been using
-                primes as they tend to get a bit sharper images.
-              </Comment>
-              <Comment
-                userImgSrc={require("../../../assets/img/user1CommentImg.png")}
-                date="09 червня, 2020 | 09:20"
-                isMyComment={false}
-              >
-                Thank you! That was very helpful!
-              </Comment>
-            </View>
-          </ScrollView>
+            )}
+            keyExtractor={(item) => item.commentId}
+          />
           <View>
             <TextInput
+              value={commentValue}
+              onChangeText={setCommentValue}
               onFocus={() => setIsKeyboardOpen(true)}
               onBlur={() => setIsKeyboardOpen(false)}
               placeholder="Коментувати..."
               style={styles.input}
               placeholderTextColor={"#bdbdbd"}
             />
-            <TouchableOpacity style={styles.postCommentBtn}>
+            <TouchableOpacity
+              style={styles.postCommentBtn}
+              onPress={handlePostComment}
+            >
               <ArrowUpIcon />
             </TouchableOpacity>
           </View>
